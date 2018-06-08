@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="laboratory"
+  id="myeclipse.1514863918468"
+  context-root="/laboratory"
+  j2ee-spec="5.0"
+  archive="laboratory.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

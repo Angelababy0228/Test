@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.core.dao.CustomerDao">
+    <!--SQL片段  -->
+    <sql id="selectCustomerListWhere">
+        <where>
+	       <if test="cust_name != null" >
+	           cust_name like "%"#{cust_name}"%"
+	       </if>
+	       <if test="cust_source != null" >
+	        and cust_source = #{cust_source}
+	       </if>
+	       <if test="cust_industry != null" >
+	        and cust_industry = #{cust_industry}
+	       </if>
+	       <if test="cust_level != null" >
+	        and cust_level = #{cust_level}
+	       </if>
+        </where>
+    </sql>
+    <sql id="selectCustomerLastWhere">
+        <where>
+	       <if test="productId != 0" >
+	           productId = #{productId}
+	       </if>
+	       <if test="className != null" >
+	        and className = #{className}
+	       </if>
+	       <if test="modelName != null" >
+	        and modelName = #{modelName}
+	       </if>
+	       <if test="manufacturer != null" >
+	        and manufacturer = #{manufacturer}
+	       </if>
+        </where>
+    </sql>
+	<!-- 查询客户信息列表  -->
+	<select id="selectCustomerList" parameterType="customer" 
+                                           resultType="customer">	<!-- 只能使用customer 不能使用List<Customer>  -->
+		SELECT
+			cust_id,
+			cust_name,
+			cust_user_id,
+			cust_create_id,
+			b.dict_item_name cust_source,
+			c.dict_item_name cust_industry,
+			d.dict_item_name cust_level,
+			cust_linkman,
+			cust_phone,
+			cust_mobile,
+			cust_createtime
+		FROM
+			customer a
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '002'
+		) b ON a.cust_source = b.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '001'
+		) c ON a.cust_industry = c.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '006'
+		) d ON a.cust_level = d.dict_id
+		<include refid="selectCustomerListWhere"/>
+		<!-- 执行分页查询 -->
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+	</select>
+	<!-- 查询客户信息总数 -->
+	<select id="selectCustomerListCount" parameterType="customer" 
+                                                 resultType="Integer">
+		select count(*) from customer
+		<include refid="selectCustomerListWhere"/>
+	</select>	
+	
+	<!-- 添加器材信息-->
+	<insert id="createProduct" parameterType="product">
+	    insert into product(
+			              className,
+			              modelName,
+			              manufacturer,
+			              productName,
+			              productNumber,
+			              price,
+			              guaranteeperiod,
+			              dataofPurchase,
+			              recordDate,
+		                  situation,
+		                  handler,
+			              remark
+	             )
+	             values(#{className},
+	                    #{modelName},
+	                    #{manufacturer},
+	                    #{productName},
+	                    #{productNumber},
+	                    #{price},
+	                    #{guaranteeperiod},
+	                    #{dataofPurchase},
+	                    #{recordDate},
+	                    #{situation},
+	                    #{handler},
+	                    #{remark}
+	            )
+	</insert>
+	<!-- 添加报修器材信息-->
+	<insert id="createRepairProduct" parameterType="product">
+	    insert into repair(
+	                      productId,
+			              productNumber,
+			              recordDate,
+			              repairCost,
+		                  handler,
+			              remark
+	             )
+	             values(#{productId},
+	                    #{productNumber},
+	                    #{repairDate},
+	                    #{repairCost},
+	                    #{handler},
+	                    #{remark}
+	            )
+	</insert>
+	<!-- 添加报废器材信息-->
+	<insert id="createScrapProduct" parameterType="product">
+	    insert into scrap(
+	                      productId,
+			              productNumber,
+			              scrapDate,
+		                  handler,
+			              remark
+	             )
+	             values(#{productId},
+	                    #{productNumber},
+	                    #{scrapDate},
+	                    #{handler},
+	                    #{remark}
+	            )
+	</insert>
+	<!-- 根据id获取器材信息 -->
+	<select id="getProductById" parameterType="Integer" 
+	resultType="product">
+	    select * from product where productId = #{id}
+	</select>
+	<!-- 更新器材信息 -->
+	<update id="updateProduct" parameterType="product">
+	    update product
+	    <set>
+	        <if test="className!=null">
+	            className=#{className},
+	        </if>
+	        <if test="modelName!=null">
+	            modelName=#{modelName},
+	        </if>
+	        <if test="manufacturer!=null">
+	            manufacturer=#{manufacturer},
+	        </if>
+	        <if test="productName!=null">
+	            productName=#{productName},
+	        </if>
+	        <if test="productNumber!=null">
+	            productNumber=#{productNumber},
+	        </if>
+	        <if test="price!=0">
+	            price=#{price},
+	        </if>
+	        <if test="guaranteeperiod!=null">
+	            guaranteeperiod=#{guaranteeperiod},
+	        </if>
+	        <if test="dataofPurchase!=null">
+	            dataofPurchase=#{dataofPurchase},
+	        </if>
+	        <if test="recordDate!=null">
+	            recordDate=#{recordDate},
+	        </if>
+	        <if test="situation!=null">
+	            situation=#{situation},
+	        </if>
+	        <if test="handler!=null">
+	            handler=#{handler},
+	        </if>
+	        <if test="remark!=null">
+	            remark=#{remark},
+	        </if>
+	    </set>
+	    where productId=#{productId}
+	</update>
+	<!-- 创建允许报修器材信息 -->
+	<insert id="createAgreeRepair" parameterType="product">
+		insert into agreerepair(productId,leader,recordDate)
+		values(#{productId},#{leader},#{recordDate})
+	</insert>
+	<!--查看已批报修器材信息  -->
+	<select id="selectAgreeRepair" parameterType="product" 
+                                                 resultType="product">
+		SELECT
+			repair.productId,
+		    leader,
+		    recordDate,
+			productNumber,
+			repairDate,
+			repairCost,
+		    handler,
+			remark
+		FROM
+			repair,agreerepair
+		<where>
+	     repair.productId=agreerepair.productId 
+	       <if test="remark != null" >
+	         and remark = #{remark}
+	       </if>
+        </where>
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+		</select>
+		<!--  查询报修信息总数 -->
+	<select id="selectAgreeRepairCount" parameterType="product" 
+                                                 resultType="Integer">
+		select count(*) from repair where remark=#{remark}
+	</select>
+	<!--更新报修表器材信息  -->
+	<update id="updateRepair">
+	update repair
+	<set>
+	    remark=#{remark}
+	</set>
+	where productId=#{productId}
+	
+	</update>
+	<!--创建完成报修器材信息  -->
+	<insert id="createEndRepair" parameterType="product">
+	insert into endRepair(productId,productNumber,repairCost,handler,recordDate)
+	values(#{productId},#{productNumber},#{repairCost},#{handler},#{recordDate})
+	
+	</insert>
+	<!--更新器材表器材状态信息  -->
+	<update id="updateEndRepair">
+	update product
+	<set>
+	    situation=#{situation}
+	</set>
+	where productId=#{productId}
+	
+	</update>
+	<!-- 删除器材信息 -->
+	<delete id="deleteProduct" parameterType="Integer">
+	    delete from product where productId=#{id}
+	</delete>
+	<!--创建删除器材信息  -->
+	<insert id="createDeleteProduct" parameterType="product">
+	insert into deleteProduct(productId,className,modelName,manufacturer,productName,productNumber,price,guaranteeperiod,dataofPurchase,recordDate,
+		    handler)
+	values(#{productId},#{className},#{modelName},#{manufacturer},#{productName},#{productNumber},#{price},#{guaranteeperiod},#{dataofPurchase},#{recordDate},
+	       #{handler})
+	
+	</insert>
+	<!--查询器材信息列表  -->
+	<select id="selectProductLast" parameterType="product" 
+                                                 resultType="product">
+		SELECT
+			productId,
+			b.dict_item_name className,
+			c.dict_item_name modelName,
+			d.dict_item_name manufacturer,
+			productName,
+			productNumber,
+			price,
+			guaranteeperiod,
+			dataofPurchase,
+			recordDate,
+		    situation,
+		    handler,
+			remark
+		FROM
+			product a
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '010'
+		) b ON a.className = b.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '011'
+		) c ON a.modelName = c.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '012'
+		) d ON a.manufacturer = d.dict_id 
+		<include refid="selectCustomerLastWhere"/>
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+	</select>
+	<!--器材信息总数  -->
+	<select id="selectProductLastCount" parameterType="product" 
+                                                 resultType="Integer">
+		select count(*) from product
+		<include refid="selectCustomerLastWhere"/>
+	</select>
+	<!-- 报修器材信息列表  -->
+		<select id="queryRepair" parameterType="product" 
+                                                 resultType="product">
+		SELECT
+			productId,
+			productNumber,
+			repairDate,
+			repairCost,
+		    handler,
+			remark
+		FROM
+			repair 
+		<where>
+	       <if test="remark != null" >
+	         remark = #{remark}
+	       </if>
+        </where>
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+	</select>
+	<!-- 查询报修信息总数 -->
+	<select id="queryRepairCount" parameterType="product" 
+                                                 resultType="Integer">
+		select count(*) from repair
+	</select>	
+</mapper>
